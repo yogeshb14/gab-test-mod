@@ -1,5 +1,5 @@
 provider "aws" {
-  region = "eu-west-2"
+  region = "us-east-1"
 }
 
 # Select the workspace (dev, prod, stage)
@@ -12,23 +12,33 @@ resource "aws_s3_bucket" "terraform_state_bucket" {
   bucket = "gab-terraform-state-bucket-${terraform.workspace}"
   acl    = "private"
 
-  versioning {
-    enabled = true
-  }
-
   tags = {
     Name = "terraform-state-bucket-${terraform.workspace}"
   }
-   lifecycle {
+  lifecycle {
     prevent_destroy = false
+  }
+
+
+
+}
+
+resource "aws_s3_bucket_versioning" "versioning" {
+  bucket = aws_s3_bucket.terraform_state_bucket.id
+
+  versioning_configuration {
+    status = "Enabled"
   }
 }
 
+
+
+
 terraform {
   backend "s3" {
-    bucket = "gab-terraform-state-bucket-dev"  ## actual bucket name
+    bucket = "gab-terraform-state-bucket-dev2" ## actual bucket name
     key    = "terraform/state/default.tfstate"
-    region = "eu-west-2"
+    region = "us-east-1"
   }
 }
 
@@ -112,7 +122,7 @@ resource "aws_eks_node_group" "eks_node_group" {
   instance_types = ["t2.medium"]
 
   remote_access {
-    ec2_ssh_key = var.ssh_key_name
+    ec2_ssh_key               = var.ssh_key_name
     source_security_group_ids = [aws_security_group.eks_node_sg.id]
   }
 }
@@ -226,14 +236,14 @@ resource "aws_ecr_repository" "app_repo" {
 }
 # EC2 instance configuration
 resource "aws_instance" "ubuntu_instance" {
-  ami           = "ami-0e8d228ad90af673b"
+  ami           = "ami-0e1bed4f06a3b463d"
   instance_type = "t2.micro"
-  subnet_id     = aws_subnet.main[0].id  # Subnets
-  
+  subnet_id     = aws_subnet.main[0].id # Subnets
+
   tags = {
     Name = "gab-ec2-${terraform.workspace}"
   }
-  
+
   # security group with this instance
   vpc_security_group_ids = [aws_security_group.eks_node_sg.id]
 }
