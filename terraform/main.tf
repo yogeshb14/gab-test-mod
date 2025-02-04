@@ -250,4 +250,3 @@ resource "aws_instance" "ubuntu_instance" {
   # security group with this instance
   vpc_security_group_ids = [aws_security_group.eks_node_sg.id]
 }
-// the code is ok
